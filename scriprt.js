@@ -1,42 +1,29 @@
-// Ripple effect (фиксированная позиция и центрирование)
-document.querySelectorAll('.ripple').forEach(elem => {
-  elem.style.position = 'relative'; // Важно для позиционирования ripple внутри
-  elem.addEventListener('click', function (e) {
-    const circle = document.createElement('span');
-    circle.classList.add('ripple-effect');
-    circle.style.left = ${e.offsetX}px;
-    circle.style.top = ${e.offsetY}px;
-    this.appendChild(circle);
-    setTimeout(() => circle.remove(), 600);
+// Сохранение введённых данных в localStorage
+document.querySelectorAll('[contenteditable]').forEach(el => {
+    const saved = localStorage.getItem(el.id);
+    if (saved) el.innerText = saved;
+  
+    el.addEventListener('input', () => {
+      localStorage.setItem(el.id, el.innerText);
+    });
   });
-});
-
-//Удаляем ripple-элементы перед скачиванием PDF
-const downloadBtn = document.getElementById('download-btn');
-if (downloadBtn) {
-  downloadBtn.addEventListener('click', () => {
-    //Удаляем ripple-эффекты перед экспортом
-    document.querySelectorAll('.ripple-effect').forEach(el => el.remove());
-
-    const element = document.querySelector('.resume-container');
-    const opt = {
-      margin:       0.5,
-      filename:     'resume.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+  
+  // Скачать как PDF (в виде печати)
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    window.print();
   });
-}
-
-const editableFields = document.querySelectorAll('.editable');
-editableFields.forEach((el, i) => {
-  const fieldKey = editableField-${i};
-  const saved = localStorage.getItem(fieldKey);
-  if (saved) el.innerText = saved;
-
-  el.addEventListener('input', () => {
-    localStorage.setItem(fieldKey, el.innerText);
+  
+  // Ripple-эффект
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('ripple-target')) {
+      const ripple = document.createElement('span');
+      const rect = e.target.getBoundingClientRect();
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+      ripple.style.left = (e.clientX - rect.left - rect.width / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - rect.height / 2) + 'px';
+      e.target.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    }
   });
-});
+  
