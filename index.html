@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Моё Резюме</title>
-  <link rel="stylesheet" href="style.css" />
+  <!-- Подключаем библиотеки -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin: 0;
-      background: #8669b5; /* Светло-серый фон */
+      background: #8669b5;
       overflow-x: hidden;
       position: relative;
       display: flex;
@@ -17,16 +19,16 @@
       min-height: 100vh;
       padding: 20px;
       box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
-    /* Темно-серая волна на фоне */
     .background-wave {
       position: absolute;
       width: 100%;
       height: 50vh;
       bottom: 0;
       left: 0;
-      background: #73648c; /* Темно-серый цвет волны */
+      background: #73648c;
       z-index: 0;
       overflow: hidden;
     }
@@ -44,12 +46,8 @@
     }
 
     @keyframes waveMove {
-      0% {
-        transform: translateX(0);
-      }
-      100% {
-        transform: translateX(-50%);
-      }
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     .resume {
@@ -80,7 +78,7 @@
       font-weight: bold;
       margin-bottom: 10px;
       display: block;
-      color: #555; /* Темно-серый цвет для заголовков */
+      color: #555;
       font-size: 18px;
     }
 
@@ -100,7 +98,7 @@
     #downloadBtn {
       margin-top: 30px;
       padding: 12px 25px;
-      background-color: #555; /* Темно-серый цвет кнопки */
+      background-color: #555;
       color: white;
       border: none;
       border-radius: 5px;
@@ -128,43 +126,78 @@
   </style>
 </head>
 <body>
-  <!-- Темно-серая волна на фоне -->
   <div class="background-wave"></div>
 
   <div class="resume">
-    <!-- Имя и Фамилия -->
     <header>
       <span class="field-label">Имя Фамилия</span>
       <div class="field-input" contenteditable="true" id="name">Садилов Данил</div>
     </header>
 
-    <!-- Краткая информация -->
     <section>
       <span class="field-label">Краткая информация о себе</span>
       <div class="field-input" contenteditable="true" id="summary">Ничего не делаю, хочу много зарабатывать</div>
     </section>
 
-    <!-- Опыт работы -->
     <section>
       <span class="field-label">Опыт работы</span>
       <div class="field-input" contenteditable="true" id="experience">3 года</div>
     </section>
 
-    <!-- Образование -->
     <section>
       <span class="field-label">Образование</span>
       <div class="field-input" contenteditable="true" id="education">Программист</div>
     </section>
 
-    <!-- Контакты -->
     <footer>
       <span class="field-label">Контакты</span>
       <div class="field-input" contenteditable="true" id="contacts">+7 003 000 00 00</div>
     </footer>
 
-    <button id="downloadBtn" class="ripple-target">Скачать PDF</button>
+    <button id="downloadBtn">Скачать PDF</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      const btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Генерация PDF...';
+      
+      // Увеличиваем качество изображения
+      const scale = window.devicePixelRatio * 2;
+      
+      html2canvas(document.querySelector('.resume'), {
+        scale: scale,
+        logging: true,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#FFFFFF'
+      }).then(canvas => {
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Рассчитываем размеры с учетом отступов
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth - 20; // Отступы по 10мм с каждой стороны
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Центрируем изображение
+        const x = (pageWidth - imgWidth) / 2;
+        const y = 10;
+        
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+        pdf.save('Моё_Резюме.pdf');
+        
+        btn.disabled = false;
+        btn.textContent = 'Скачать PDF';
+      }).catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка при создании PDF. Пожалуйста, попробуйте снова.');
+        btn.disabled = false;
+        btn.textContent = 'Скачать PDF';
+      });
+    });
+  </script>
 </body>
 </html>
